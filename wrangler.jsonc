@@ -28,6 +28,6 @@
     }
   ],
   "vars": {
-    "CLOUDFLARE_API_TOKEN": "cfut_9OnfL08jwlf1i61JjyYxxmQZid4W446kyoIve0uKee6f786b"
+    "CLOUDFLARE_API_TOKEN": ""
   }
 }
