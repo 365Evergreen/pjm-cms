@@ -7,11 +7,13 @@ import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
+import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from  './collections/Posts'
+import { Documents } from './collections/Documents';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -65,7 +67,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Pages, Posts],
+  collections: [Users, Media, Pages, Posts, Documents],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -73,11 +75,28 @@ export default buildConfig({
   },
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
   logger: isProduction ? cloudflareLogger : undefined,
-  plugins: [
+  plugins: [formBuilderPlugin({ fields: {
+    text: true,
+    textarea: true,
+    select: true,
+    radio: true,
+    email: true,
+    state: true,
+    country: true,
+    checkbox: true,
+    number: true,
+    message: true,
+    date: false,
+    payment: false,
+    upload: true,},
+      uploadCollections: ['media'], // Required when using upload
+    },
+
+  ),
     r2Storage({
       bucket: cloudflare.env.R2,
       collections: { media: true },
-    }),
+    }), 
   ],
 })
 

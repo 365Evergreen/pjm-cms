@@ -20,6 +20,12 @@
     }
   ],
   "services": [],
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "remote": true
+    }
+  ],
   "r2_buckets": [
     {
       "binding": "R2",
