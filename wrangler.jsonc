@@ -33,7 +33,8 @@
   "r2_buckets": [
     {
       "binding": "R2",
-      "bucket_name": "pjm-content-bucket","preview_bucket_name": "pjm-content-bucket",
+      "bucket_name": "pjm-content-bucket",
+      "preview_bucket_name": "pjm-content-bucket",
     },
     // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
     // {
