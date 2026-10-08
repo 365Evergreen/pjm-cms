@@ -26,8 +26,5 @@
       "bucket_name": "pjm-content-bucket",
       "preview_bucket_name": "pjm-content-bucket"
     }
-  ],
-  "vars": {
-    "CLOUDFLARE_API_TOKEN": ""
-  }
+  ]
 }
