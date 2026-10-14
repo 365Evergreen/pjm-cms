@@ -162,3 +162,14 @@ svg {
     }
   }
 }
+
+/*Header*/
+
+.header {
+  width: 100%;
+}
+
+.headerContent {
+  width: 100%;
+  padding: 0 4rem;
+}
