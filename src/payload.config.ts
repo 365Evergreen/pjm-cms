@@ -8,15 +8,15 @@ import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
-
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
-import { Posts } from  './collections/Posts'
+import { Posts } from './collections/Posts'
 import { Documents } from './collections/Documents';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
 const realpath = (value: string) => {
   try {
     return fs.existsSync(value) ? fs.realpathSync(value) : undefined
@@ -33,16 +33,16 @@ const isCLI = process.argv.some((value) => {
     resolved.endsWith(path.join('next', 'dist', 'bin', 'next'))
   )
 })
+
 const isProduction = process.env.NODE_ENV === 'production'
 
-const createLog =
-  (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
-    if (typeof objOrMsg === 'string') {
-      fn(JSON.stringify({ level, msg: objOrMsg }))
-    } else {
-      fn(JSON.stringify({ level, ...objOrMsg, msg: msg ?? (objOrMsg as { msg?: string }).msg }))
-    }
+const createLog = (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
+  if (typeof objOrMsg === 'string') {
+    fn(JSON.stringify({ level, msg: objOrMsg }))
+  } else {
+    fn(JSON.stringify({ level, ...objOrMsg, msg: msg ?? (objOrMsg as { msg?: string }).msg }))
   }
+}
 
 const cloudflareLogger = {
   level: process.env.PAYLOAD_LOG_LEVEL || 'info',
@@ -53,19 +53,17 @@ const cloudflareLogger = {
   error: createLog('error', console.error),
   fatal: createLog('fatal', console.error),
   silent: () => { },
-} as any // Use PayloadLogger type when it's exported
+} as any
 
-const cloudflare =
-  isCLI || !isProduction
-    ? await getCloudflareContextFromWrangler()
-    : await getCloudflareContext({ async: true })
+const cloudflare = isCLI || !isProduction ? await getCloudflareContextFromWrangler() : await getCloudflareContext({ async: true })
 
 export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
-    },
+    }
+
   },
   collections: [Users, Media, Pages, Posts, Documents],
   editor: lexicalEditor(),
@@ -75,38 +73,39 @@ export default buildConfig({
   },
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
   logger: isProduction ? cloudflareLogger : undefined,
-  plugins: [formBuilderPlugin({ fields: {
-    text: true,
-    textarea: true,
-    select: true,
-    radio: true,
-    email: true,
-    state: true,
-    country: true,
-    checkbox: true,
-    number: true,
-    message: true,
-    date: false,
-    payment: false,
-    upload: true,},
-      uploadCollections: ['media'], // Required when using upload
-    },
-
-  ),
+  plugins: [
+    formBuilderPlugin({
+      fields: {
+        text: true,
+        textarea: true,
+        select: true,
+        radio: true,
+        email: true,
+        state: true,
+        country: true,
+        checkbox: true,
+        number: true,
+        message: true,
+        date: false,
+        payment: false,
+        upload: true,
+      },
+      uploadCollections: ['media'],
+    }),
     r2Storage({
       bucket: cloudflare.env.R2,
       collections: { media: true },
-    }), 
+    }),    // ✅ Moved inside buildConfig -> admin
+  
   ],
-})
+});
 
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
 function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
   return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
-    ({ getPlatformProxy }) =>
-      getPlatformProxy({
-        environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: isProduction,
-      } satisfies GetPlatformProxyOptions),
+    ({ getPlatformProxy }) => getPlatformProxy({
+      environment: process.env.CLOUDFLARE_ENV,
+      remoteBindings: isProduction,
+    } satisfies GetPlatformProxyOptions),
   )
 }
