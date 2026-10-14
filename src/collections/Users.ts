@@ -5,8 +5,7 @@ export const Users: CollectionConfig = {
    auth: {
     // Optional custom cookie or token settings for edge execution
     tokenExpiration: 7200, // 2 hours in seconds
-    verify: false,
-    useAPIKey: true,
+    verify: false
   },
   admin: {
     useAsTitle: 'email',
