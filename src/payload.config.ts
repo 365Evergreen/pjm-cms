@@ -3,6 +3,7 @@ import path from 'path'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
+import { resendAdapter } from '@payloadcms/email-resend'
 import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
@@ -65,6 +66,11 @@ export default buildConfig({
     }
 
   },
+  email: resendAdapter({
+    apiKey: process.env.RESEND_API_KEY, // Set this as a Worker secret
+    defaultFromAddress: 'noreply@pauljmurphy.com',
+    defaultFromName: 'Paul J Murphy CMS',
+  }),
   collections: [Users, Media, Pages, Posts, Documents],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
