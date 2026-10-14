@@ -16,7 +16,8 @@
       "binding": "D1",
       "database_id": "f340366c-a44d-4361-adb0-9233350e7f71",
       "database_name": "pjm-cms-db",
-      "remote": true
+      "remote": true,
+      "migrations_dir": "src/migrations"
     }
   ],
   "services": [],

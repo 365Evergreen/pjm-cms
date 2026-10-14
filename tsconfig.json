@@ -41,7 +41,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "create-admin.js"
+    "create-admin.js",
+    ".next/dev/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

@@ -2,7 +2,12 @@ import { CollectionConfig } from 'payload'
 
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+   auth: {
+    // Optional custom cookie or token settings for edge execution
+    tokenExpiration: 7200, // 2 hours in seconds
+    verify: false,
+    useAPIKey: true,
+  },
   admin: {
     useAsTitle: 'email',
   },
