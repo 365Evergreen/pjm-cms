@@ -1,5 +1,5 @@
 import React from 'react'
-import Header from './components/Header'
+import header from './components/Header'
 import './styles.css'
 
 export const metadata = {
@@ -13,6 +13,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <header />
         <main>{children}</main>
       </body>
     </html>

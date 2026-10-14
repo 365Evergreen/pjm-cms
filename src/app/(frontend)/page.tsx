@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 import React from 'react'
 import { fileURLToPath } from 'url'
+import header from './components/Header'
 
 import config from '@/payload.config'
 import './styles.css'
@@ -17,7 +18,9 @@ export default async function HomePage() {
 
   return (
     <div className="home">
+      <header />
       <div className="content">
+        <header />
         <picture>
           <source srcSet="https://raw.githubusercontent.com/payloadcms/payload/3.x/packages/ui/src/assets/payload-favicon.svg" />
           <Image

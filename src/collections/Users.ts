@@ -1,24 +1,16 @@
 import { CollectionConfig, AuthStrategyFunction } from 'payload'
 
-/**
- * 1. Your Custom Authentication Strategy for Cloudflare Edge
- * This handles parsing incoming custom headers on your Worker site.
- */
 const cloudflareCustomAuth: AuthStrategyFunction = async ({ payload, headers }) => {
-  // Extract identifier source from your incoming Cloudflare request headers
   const incomingUserEmail = headers.get('x-user-email')
 
   if (!incomingUserEmail) {
     return { user: null }
   }
 
-  // Query your Cloudflare D1 user collection using Payload Local API
   const { docs } = await payload.find({
     collection: 'users',
     where: {
-      email: {
-        equals: incomingUserEmail,
-      },
+      email: { equals: incomingUserEmail },
     },
     limit: 1,
     disableErrors: true,
@@ -30,8 +22,6 @@ const cloudflareCustomAuth: AuthStrategyFunction = async ({ payload, headers }) 
     return { user: null }
   }
 
-  // Return the complete database document. 
-  // Because it comes from the Local API, it contains required system fields natively!
   return {
     user: {
       ...userRecord,
@@ -40,14 +30,9 @@ const cloudflareCustomAuth: AuthStrategyFunction = async ({ payload, headers }) 
   }
 }
 
-/**
- * 2. Main Collection Configuration Definition
- * This tells Payload CMS and Drizzle how to construct tables inside your Cloudflare D1 DB.
- */
 export const Users: CollectionConfig = {
   slug: 'users',
   auth: {
-    // 🌟 This connects your custom validation function into Payload's lifecycle hooks
     strategies: [
       {
         name: 'cloudflare-header-strategy',
@@ -55,11 +40,32 @@ export const Users: CollectionConfig = {
       },
     ],
   },
+  // 🌟 ADD THIS ACCESS CONTROL BLOCK 🌟
+  access: {
+    // Allows anyone (even unauthenticated visitors) to create a new user profile/account
+    create: () => true,
+
+    // Limits reading, editing, or removing profiles strictly to administrators 
+    // or the specific user who owns that specific record
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.role === 'admin') return true
+      return { id: { equals: user.id } }
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.role === 'admin') return true
+      return { id: { equals: user.id } }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return user.role === 'admin' // Only admins can hard delete users from D1
+    },
+  },
   admin: {
     useAsTitle: 'email',
   },
   fields: [
-    // This explicit definition satisfies the "missing role" error constraint safely 
     {
       name: 'role',
       type: 'select',

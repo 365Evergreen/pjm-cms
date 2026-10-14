@@ -1,5 +1,5 @@
 import styles from './Header.module.css'
-export default function Header() {
+export default function header() {
     return (
 
         <header className={styles.header}>
