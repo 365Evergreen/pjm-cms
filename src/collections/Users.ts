@@ -1,15 +1,18 @@
-import { AuthStrategyFunction } from 'payload'
+import { CollectionConfig, AuthStrategyFunction } from 'payload'
 
-export const myCloudflareAuthStrategy: AuthStrategyFunction = async ({ payload, headers }) => {
-  // 1. Authenticate your incoming request (e.g., parsing a JWT, custom token, or cookie)
-  const incomingUserEmail = headers.get('x-user-email') // Example identifier source
+/**
+ * 1. Your Custom Authentication Strategy for Cloudflare Edge
+ * This handles parsing incoming custom headers on your Worker site.
+ */
+const cloudflareCustomAuth: AuthStrategyFunction = async ({ payload, headers }) => {
+  // Extract identifier source from your incoming Cloudflare request headers
+  const incomingUserEmail = headers.get('x-user-email')
 
   if (!incomingUserEmail) {
     return { user: null }
   }
 
-  // 2. Query your Cloudflare D1 user collection using Payload Local API
-  // This safely fetches the full Drizzle-mapped object including createdAt, updatedAt, role, etc.
+  // Query your Cloudflare D1 user collection using Payload Local API
   const { docs } = await payload.find({
     collection: 'users',
     where: {
@@ -18,7 +21,7 @@ export const myCloudflareAuthStrategy: AuthStrategyFunction = async ({ payload, 
       },
     },
     limit: 1,
-    disableErrors: true, // Gracefully handles empty records without worker fatal errors
+    disableErrors: true,
   })
 
   const userRecord = docs[0]
@@ -27,7 +30,8 @@ export const myCloudflareAuthStrategy: AuthStrategyFunction = async ({ payload, 
     return { user: null }
   }
 
-  // 3. Return the fully typed structure with the correct collection marker
+  // Return the complete database document. 
+  // Because it comes from the Local API, it contains required system fields natively!
   return {
     user: {
       ...userRecord,
@@ -35,3 +39,38 @@ export const myCloudflareAuthStrategy: AuthStrategyFunction = async ({ payload, 
     },
   }
 }
+
+/**
+ * 2. Main Collection Configuration Definition
+ * This tells Payload CMS and Drizzle how to construct tables inside your Cloudflare D1 DB.
+ */
+export const Users: CollectionConfig = {
+  slug: 'users',
+  auth: {
+    // 🌟 This connects your custom validation function into Payload's lifecycle hooks
+    strategies: [
+      {
+        name: 'cloudflare-header-strategy',
+        authenticate: cloudflareCustomAuth,
+      },
+    ],
+  },
+  admin: {
+    useAsTitle: 'email',
+  },
+  fields: [
+    // This explicit definition satisfies the "missing role" error constraint safely 
+    {
+      name: 'role',
+      type: 'select',
+      defaultValue: 'user',
+      required: true,
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'User', value: 'user' },
+      ],
+    },
+  ],
+}
+
+export default Users
